@@ -3,44 +3,45 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title></title>
+  <title>Vòng quay số & Chia chủ đề (offline) — Pink Hearts Edition</title>
   <style>
     :root{
-      --bg: #0b0d12;
-      --bg-elev: #131722;
-      --text: #e9eef6;
-      --muted: #a7b0c0;
-      --accent: #6aa0ff;
-      --accent-2: #8bd2a7;
-      --danger: #ff7a7a;
-      --border: #222838;
-      --ring: #7aa2ff66;
-    }
-    @media (prefers-color-scheme: light){
-      :root{
-        --bg: #f7f9fc; --bg-elev: #ffffff; --text: #101828; --muted:#667085;
-        --accent:#2f6feb; --accent-2:#1aa36f; --danger:#d92d20; --border:#e4e7ec; --ring:#2f6feb40;
-      }
+      --bg: #ffd5e5; /* nền hồng nhạt */
+      --bg-elev: #fff0f6;
+      --text: #141414;
+      --muted: #6b7280;
+      --accent: #ff4d8d; /* hồng đậm */
+      --accent-2: #22c55e;
+      --danger: #ef4444;
+      --border: #f2c2d4;
+      --ring: #ff4d8d55;
     }
     *{box-sizing:border-box}
     html,body{height:100%}
-    body{margin:0; background:var(--bg); color:var(--text); font:14px/1.5 system-ui,Segoe UI,Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji"}
-    .container{max-width:1100px;margin:0 auto;padding:24px}
+    body{margin:0; background:var(--bg); color:var(--text); font:14px/1.5 system-ui,Segoe UI,Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji"; position:relative; overflow-x:hidden}
+
+    /* Hearts background */
+    .heart{position:fixed; width:18px; height:18px; background:white; transform:rotate(45deg); opacity:.85; filter:drop-shadow(0 2px 2px rgba(0,0,0,.08)); z-index:0}
+    .heart:before,.heart:after{content:""; position:absolute; width:18px; height:18px; background:white; border-radius:50%}
+    .heart:before{top:-9px; left:0}
+    .heart:after{left:-9px; top:0}
+    @keyframes floatUp { 0%{ transform:translateY(100vh) rotate(45deg); opacity:.9 } 100%{ transform:translateY(-15vh) rotate(45deg); opacity:0 } }
+
+    .container{max-width:1100px;margin:0 auto;padding:24px; position:relative; z-index:1}
     header{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:16px}
     h1{font-size:20px;margin:0}
     .tabs{display:flex;gap:8px;flex-wrap:wrap}
     .tab-btn{background:var(--bg-elev);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:10px;cursor:pointer}
-    .tab-btn[aria-selected="true"]{outline:2px solid var(--ring); background:linear-gradient(180deg,var(--bg-elev),#0f1220);
-      box-shadow:0 1px 0 #00000020 inset}
+    .tab-btn[aria-selected="true"]{outline:2px solid var(--ring); background:linear-gradient(180deg,var(--bg-elev),#ffe3ef); box-shadow:0 1px 0 #00000010 inset}
     .grid{display:grid;gap:16px}
     .two-col{grid-template-columns:1.1fr 1fr}
     @media (max-width:900px){.two-col{grid-template-columns:1fr}}
     .card{background:var(--bg-elev);border:1px solid var(--border);border-radius:16px;padding:16px}
     .row{display:flex;gap:12px;flex-wrap:wrap;align-items:end}
     label{display:block;font-weight:600;margin-bottom:6px}
-    input[type="number"],input[type="text"],textarea,select{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text)}
+    input[type="number"],input[type="text"],textarea,select{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:#fff;color:var(--text)}
     textarea{min-height:140px;resize:vertical}
-    .btn{appearance:none;border:1px solid var(--border);background:var(--bg);color:var(--text);padding:10px 14px;border-radius:12px;cursor:pointer}
+    .btn{appearance:none;border:1px solid var(--border);background:#ffe6ef;color:var(--text);padding:10px 14px;border-radius:12px;cursor:pointer}
     .btn.primary{background:var(--accent);border-color:transparent;color:white}
     .btn.ghost{background:transparent}
     .btn.success{background:var(--accent-2);color:white;border-color:transparent}
@@ -49,9 +50,8 @@
     .hint{color:var(--muted);font-size:12px}
     .toolbar{display:flex;gap:8px;flex-wrap:wrap}
     .result-banner{font-size:48px;font-weight:800;text-align:center;margin:0}
-    .history{max-height:180px;overflow:auto;border:1px dashed var(--border);border-radius:12px;padding:8px}
+    .history{max-height:180px;overflow:auto;border:1px dashed var(--border);border-radius:12px;padding:8px;background:#fff}
     .warn{color:var(--danger); font-weight:600}
-    .sr-only{position:absolute !important; height:1px;width:1px;overflow:hidden;clip:rect(1px,1px,1px,1px)}
 
     /* Wheel */
     .wheel-wrap{position:relative;display:grid;place-items:center;aspect-ratio:1/1;width:min(520px, 90vw);margin:0 auto}
@@ -59,15 +59,15 @@
     .wheel-svg{width:100%;height:100%}
 
     table{width:100%;border-collapse:collapse}
-    th,td{border-bottom:1px solid var(--border);padding:8px 10px;text-align:left}
-    th{position:sticky;top:0;background:var(--bg-elev);z-index:1}
+    th,td{border-bottom:1px solid var(--border);padding:8px 10px;text-align:left;background:#fff}
+    th{position:sticky;top:0;background:#ffe3ef;z-index:1}
     .sticky-tools{position:sticky;top:8px;z-index:3}
   </style>
 </head>
 <body>
   <div class="container">
     <header>
-      <h1>🎡 Vòng quay KhongMayMan </h1>
+      <h1>🎡 Vòng quay KhongMayMan:( 💖</h1>
       <nav class="tabs" role="tablist" aria-label="Chọn chức năng">
         <button class="tab-btn" role="tab" id="tab-wheel" aria-selected="true" aria-controls="panel-wheel">Vòng quay số</button>
         <button class="tab-btn" role="tab" id="tab-assign" aria-selected="false" aria-controls="panel-assign">Chia chủ đề cho nhóm</button>
@@ -138,7 +138,7 @@
 
           <div id="topicsTextareaWrap" style="margin-top:8px">
             <label for="topicsTextarea">Danh sách chủ đề</label>
-            <textarea id="topicsTextarea" placeholder="Ví dụ:\nHiHi\nHeHe\nHuHu\nHaHa\nHaHaHuHuHiHiHeHe"></textarea>
+            <textarea id="topicsTextarea" placeholder="mỗi đề tài nằm trên một dòng"></textarea>
             <div class="hint">Dòng rỗng sẽ bị bỏ qua. Chủ đề trùng sẽ tự loại trừ (tránh nhập lỗi).</div>
           </div>
 
@@ -150,12 +150,13 @@
 
           <div class="row" style="margin-top:10px">
             <label><input type="checkbox" id="allowDupChk"> Cho phép lặp chủ đề</label>
+            <span class="hint">Nếu tắt, yêu cầu số chủ đề ≥ số nhóm.</span>
           </div>
 
           <div class="row" style="margin-top:10px">
             <div style="flex:1; min-width:200px">
               <label for="seedInput">Seed (tùy chọn, để tái lập)</label>
-              <input id="seedInput" type="text" placeholder="ví dụ: anhngoc">
+              <input id="seedInput" type="text" placeholder="ví dụ: semester-2025">
             </div>
           </div>
 
@@ -188,72 +189,41 @@
   </div>
 
   <script>
+    // === Hearts background ===
+    function spawnHeart(){
+      const h = document.createElement('div');
+      h.className = 'heart';
+      const size = 14 + Math.random()*14; // 14–28px
+      h.style.width = size + 'px'; h.style.height = size + 'px';
+      h.style.left = (Math.random()*100) + 'vw';
+      const dur = 6 + Math.random()*6; // 6–12s
+      h.style.animation = `floatUp ${dur}s linear forwards`;
+      document.body.appendChild(h);
+      setTimeout(()=>h.remove(), dur*1000 + 500);
+    }
+    // burst at start
+    for(let i=0;i<20;i++) setTimeout(spawnHeart, i*120);
+    // continuous spawn
+    setInterval(spawnHeart, 600);
+
     // ======= Utilities =======
     const $ = (sel, root=document) => root.querySelector(sel);
     const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+    const clamp=(n,min,max)=>Math.min(Math.max(n,min),max);
+    function toast(msg){ console.log(msg); }
 
-    function toast(msg){
-      // Minimal toast using alert replacement
-      console.log(msg);
-    }
-
-    function clamp(n,min,max){return Math.min(Math.max(n,min),max)}
-
-    // Secure random int [0, n)
     function cryptoRandInt(n){
       if (n<=0) throw new Error('n must be > 0');
       const arr = new Uint32Array(1);
-      let x; const limit = Math.floor(0xFFFFFFFF / n) * n; // avoid modulo bias
+      let x; const limit = Math.floor(0xFFFFFFFF / n) * n;
       do { crypto.getRandomValues(arr); x = arr[0]; } while (x >= limit);
       return x % n;
     }
-
-    // Seeded PRNG (mulberry32) helpers
-    function xmur3(str){
-      let h = 1779033703 ^ str.length;
-      for (let i=0;i<str.length;i++){
-        h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
-        h = (h << 13) | (h >>> 19);
-      }
-      return function(){
-        h = Math.imul(h ^ (h >>> 16), 2246822507);
-        h = Math.imul(h ^ (h >>> 13), 3266489909);
-        return (h ^= h >>> 16) >>> 0;
-      }
-    }
-    function mulberry32(a){
-      return function(){
-        a |= 0; a = a + 0x6D2B79F5 | 0;
-        let t = Math.imul(a ^ a>>>15, 1 | a);
-        t ^= t + Math.imul(t ^ t>>>7, 61 | t);
-        return ((t ^ t>>>14) >>> 0) / 4294967296;
-      }
-    }
-
-    function makeRNG(seedStr){
-      if (!seedStr) return { next: () => crypto.getRandomValues(new Uint32Array(1))[0] / 2**32 };
-      const seed = xmur3(seedStr)();
-      const rnd = mulberry32(seed);
-      return { next: () => rnd() };
-    }
-
-    function shuffle(arr, rng){
-      const a = arr.slice();
-      for (let i=a.length-1;i>0;i--){
-        const j = Math.floor((rng?.next?.() ?? Math.random()) * (i+1));
-        [a[i], a[j]] = [a[j], a[i]];
-      }
-      return a;
-    }
-
-    // Download CSV helper
-    function downloadText(filename, text){
-      const blob = new Blob([text], {type:'text/csv;charset=utf-8;'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = filename; a.click();
-      URL.revokeObjectURL(url);
-    }
+    function xmur3(str){ let h = 1779033703 ^ str.length; for (let i=0;i<str.length;i++){ h = Math.imul(h ^ str.charCodeAt(i), 3432918353); h = (h << 13) | (h >>> 19); } return function(){ h = Math.imul(h ^ (h >>> 16), 2246822507); h = Math.imul(h ^ (h >>> 13), 3266489909); return (h ^= h >>> 16) >>> 0; } }
+    function mulberry32(a){ return function(){ a|=0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a>>>15, 1 | a); t ^= t + Math.imul(t ^ t>>>7, 61 | t); return ((t ^ t>>>14) >>> 0) / 4294967296; } }
+    function makeRNG(seedStr){ if (!seedStr) return { next: () => crypto.getRandomValues(new Uint32Array(1))[0] / 2**32 }; const seed = xmur3(seedStr)(); const rnd = mulberry32(seed); return { next: () => rnd() }; }
+    function shuffle(arr, rng){ const a = arr.slice(); for (let i=a.length-1;i>0;i--){ const j = Math.floor((rng?.next?.() ?? Math.random()) * (i+1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+    function downloadText(filename, text){ const blob = new Blob([text], {type:'text/csv;charset=utf-8;'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = filename; a.click(); URL.revokeObjectURL(url); }
 
     // ======= Tabs =======
     (function(){
@@ -272,13 +242,7 @@
     })();
 
     // ======= Wheel of Numbers =======
-    const wheelState = {
-      numbers: [],
-      rotation: 0, // degrees
-      spinning: false,
-      rng: makeRNG(),
-    };
-
+    const wheelState = { numbers: [], rotation: 0, spinning: false };
     const wheelSvg = $('#wheelSvg');
     const historyList = $('#historyList');
     const lastResultEl = $('#lastResult');
@@ -304,7 +268,6 @@
       const n = wheelState.numbers.length;
       wheelSvg.innerHTML = '';
 
-      // Draw outer circle bg
       const circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
       circle.setAttribute('cx', cx); circle.setAttribute('cy', cy); circle.setAttribute('r', r+6);
       circle.setAttribute('fill', '#0000'); circle.setAttribute('stroke', getComputedStyle(document.documentElement).getPropertyValue('--border'));
@@ -327,89 +290,62 @@
       }
 
       const sectorAngle = 2 * Math.PI / n;
-      const palette = [ '#4361ee', '#4cc9f0', '#3a86ff', '#ffbe0b', '#fb5607', '#ff006e', '#8338ec', '#06d6a0' ];
+      const palette = [ '#ff6ea9', '#ff9ec5', '#ffc1d9', '#ffd6e7', '#ff9fb7', '#ff6ea9', '#ff87b7', '#ffb3cf' ];
 
       for (let i=0;i<n;i++){
-        const a1 = i * sectorAngle - Math.PI/2; // start angle (top at -90deg)
-        const a2 = (i+1) * sectorAngle - Math.PI/2; // end angle
+        const a1 = i * sectorAngle - Math.PI/2;
+        const a2 = (i+1) * sectorAngle - Math.PI/2;
         const x1 = cx + r * Math.cos(a1), y1 = cy + r * Math.sin(a1);
         const x2 = cx + r * Math.cos(a2), y2 = cy + r * Math.sin(a2);
         const largeArc = (a2 - a1) > Math.PI ? 1 : 0;
 
         const path = document.createElementNS('http://www.w3.org/2000/svg','path');
-        const d = [
-          `M ${cx} ${cy}`,
-          `L ${x1} ${y1}`,
-          `A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2}`,
-          'Z'
-        ].join(' ');
+        const d = [`M ${cx} ${cy}`, `L ${x1} ${y1}`, `A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2}`, 'Z'].join(' ');
         path.setAttribute('d', d);
         path.setAttribute('fill', palette[i % palette.length]);
-        path.setAttribute('fill-opacity','0.9');
-        path.setAttribute('stroke', 'rgba(0,0,0,0.15)');
+        path.setAttribute('fill-opacity','0.95');
+        path.setAttribute('stroke', 'rgba(255,255,255,0.6)');
         g.appendChild(path);
 
-        // label
         const mid = (a1 + a2) / 2;
         const rx = cx + (r * 0.65) * Math.cos(mid);
         const ry = cy + (r * 0.65) * Math.sin(mid);
         const text = document.createElementNS('http://www.w3.org/2000/svg','text');
         text.setAttribute('x', rx); text.setAttribute('y', ry);
         text.setAttribute('text-anchor','middle'); text.setAttribute('dominant-baseline','middle');
-        text.setAttribute('fill', 'white');
+        text.setAttribute('fill', '#401020');
         const fontSize = n > 40 ? 9 : n > 24 ? 12 : 14;
         text.setAttribute('font-size', fontSize);
-        // Keep label upright: rotate back opposite of wheel wedge orientation
-        const deg = (mid + Math.PI/2) * 180/Math.PI; // convert to deg from vertical baseline
-        text.setAttribute('transform', `rotate(${ -deg } ${rx} ${ry})`);
+        const deg = (mid + Math.PI/2) * 180/Math.PI;
+        text.setAttribute('transform', `rotate(${-deg} ${rx} ${ry})`);
         text.textContent = String(wheelState.numbers[i]);
         g.appendChild(text);
       }
-
-      // Draw center cap
       const cap = document.createElementNS('http://www.w3.org/2000/svg','circle');
       cap.setAttribute('cx', cx); cap.setAttribute('cy', cy); cap.setAttribute('r', 14);
-      cap.setAttribute('fill', 'var(--bg)'); cap.setAttribute('stroke','var(--accent)'); cap.setAttribute('stroke-width','3');
+      cap.setAttribute('fill', '#fff'); cap.setAttribute('stroke','var(--accent)'); cap.setAttribute('stroke-width','3');
       g.appendChild(cap);
     }
 
-    function setWheelRotation(deg){
-      const g = $('#wheelGroup');
-      if (!g) return;
-      g.setAttribute('transform', `rotate(${deg} 250 250)`);
-    }
-
-    function selectIndexFromRotation(rotationDeg){
-      const n = wheelState.numbers.length;
-      if (n === 0) return -1;
-      const per = 360 / n;
-      let norm = (360 - (rotationDeg % 360));
-      if (norm < 0) norm += 360;
-      const idx = Math.floor(norm / per) % n;
-      return idx;
-    }
+    function setWheelRotation(deg){ const g = document.getElementById('wheelGroup'); if (!g) return; g.setAttribute('transform', `rotate(${deg} 250 250)`); }
+    function selectIndexFromRotation(rotationDeg){ const n = wheelState.numbers.length; if (n === 0) return -1; const per = 360 / n; let norm = (360 - (rotationDeg % 360)); if (norm < 0) norm += 360; const idx = Math.floor(norm / per) % n; return idx; }
 
     function spin(){
       if (wheelState.spinning) return;
       if (wheelState.numbers.length === 0){ toast('Chưa tạo vòng.'); return; }
-      if (wheelState.numbers.length === 1 && $('#noRepeatChk').checked){
-        // Will remove last; but allow this turn
-      }
       wheelState.spinning = true;
-      $('#spinBtn').disabled = true; $('#buildWheelBtn').disabled = true; $('#resetWheelBtn').disabled = true;
+      document.getElementById('spinBtn').disabled = true; document.getElementById('buildWheelBtn').disabled = true; document.getElementById('resetWheelBtn').disabled = true;
 
       const n = wheelState.numbers.length;
-      // Choose target index uniformly
       const targetIdx = cryptoRandInt(n);
       const per = 360 / n;
-      const targetCenter = targetIdx * per + per/2; // in normalized space (pointer at 0°)
-      // rotation needed: normAngle == targetCenter => rotation = 360k + (360 - targetCenter)
-      const k = 5 + cryptoRandInt(3); // 5..7 extra spins
-      const jitter = (Math.random() - 0.5) * (per * 0.6); // stay well inside sector
+      const targetCenter = targetIdx * per + per/2;
+      const k = 5 + cryptoRandInt(3);
+      const jitter = (Math.random() - 0.5) * (per * 0.6);
       const finalRotation = 360 * k + (360 - (targetCenter + jitter));
       const startRotation = wheelState.rotation;
       const delta = finalRotation;
-      const duration = 2500 + cryptoRandInt(2000); // 2.5s - 4.5s
+      const duration = 2500 + cryptoRandInt(2000);
 
       const startTime = performance.now();
       const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
@@ -418,20 +354,14 @@
         const t = clamp((now - startTime) / duration, 0, 1);
         const eased = easeOutCubic(t);
         const current = startRotation + delta * eased;
-        wheelState.rotation = current;
-        setWheelRotation(current);
-        if (t < 1) {
-          requestAnimationFrame(frame);
-        } else {
+        wheelState.rotation = current; setWheelRotation(current);
+        if (t < 1) requestAnimationFrame(frame); else {
           wheelState.spinning = false;
-          $('#spinBtn').disabled = false; $('#buildWheelBtn').disabled = false; $('#resetWheelBtn').disabled = false;
+          document.getElementById('spinBtn').disabled = false; document.getElementById('buildWheelBtn').disabled = false; document.getElementById('resetWheelBtn').disabled = false;
           const idx = selectIndexFromRotation(current);
           const value = wheelState.numbers[idx];
           showWheelResult(value);
-          if ($('#noRepeatChk').checked){
-            wheelState.numbers.splice(idx,1);
-            // Keep rotation aligned with new array positions: we keep visual rotation, but rebuild segments
-          }
+          if (document.getElementById('noRepeatChk').checked){ wheelState.numbers.splice(idx,1); }
           renderWheel();
         }
       }
@@ -440,187 +370,53 @@
 
     function showWheelResult(value){
       lastResultEl.textContent = value;
-      lastResultEl.animate([
-        { transform:'scale(0.9)', opacity:0 },
-        { transform:'scale(1.05)', opacity:1, offset:0.7 },
-        { transform:'scale(1)', opacity:1 }
-      ], { duration:450, easing:'cubic-bezier(.2,.8,.2,1)' });
-
-      const li = document.createElement('li');
-      const ts = new Date().toLocaleTimeString();
-      li.textContent = `${ts}: ${value}`;
-      historyList.prepend(li);
-      if (historyList.children.length > 100) historyList.removeChild(historyList.lastChild);
+      lastResultEl.animate([{ transform:'scale(0.9)', opacity:0 }, { transform:'scale(1.05)', opacity:1, offset:0.7 }, { transform:'scale(1)', opacity:1 }], { duration:450, easing:'cubic-bezier(.2,.8,.2,1)' });
+      const li = document.createElement('li'); const ts = new Date().toLocaleTimeString(); li.textContent = `${ts}: ${value}`; historyList.prepend(li); if (historyList.children.length > 100) historyList.removeChild(historyList.lastChild);
     }
+    async function copyLast(){ const t = lastResultEl.textContent; if (!t || t==='–') return; try{ await navigator.clipboard.writeText(t); toast('Đã copy kết quả'); }catch{ toast('Không copy được'); }}
+    function resetWheel(){ wheelState.rotation = 0; wheelState.spinning = false; setWheelRotation(0); historyList.innerHTML = ''; lastResultEl.textContent = '–'; buildWheelFromInputs(); }
 
-    async function copyLast(){
-      const t = lastResultEl.textContent;
-      if (!t || t==='–') return;
-      try{ await navigator.clipboard.writeText(t); toast('Đã copy kết quả'); }catch{ toast('Không copy được'); }
-    }
-
-    function resetWheel(){
-      wheelState.rotation = 0; wheelState.spinning = false; setWheelRotation(0);
-      historyList.innerHTML = ''; lastResultEl.textContent = '–';
-      buildWheelFromInputs();
-    }
-
-    // Bind wheel events
-    $('#buildWheelBtn').addEventListener('click', buildWheelFromInputs);
-    $('#spinBtn').addEventListener('click', spin);
-    $('#copyLastBtn').addEventListener('click', copyLast);
-    $('#resetWheelBtn').addEventListener('click', resetWheel);
-
-    // Init wheel default
+    document.getElementById('buildWheelBtn').addEventListener('click', buildWheelFromInputs);
+    document.getElementById('spinBtn').addEventListener('click', spin);
+    document.getElementById('copyLastBtn').addEventListener('click', copyLast);
+    document.getElementById('resetWheelBtn').addEventListener('click', resetWheel);
     buildWheelFromInputs();
 
     // ======= Assign Topics to Groups =======
     const assignState = { topics: [], lastAssignments: [], seed: '', rerollCounter: 0 };
-
-    // Toggle topic mode
     $$('input[name="topicMode"]').forEach(r => r.addEventListener('change', () => {
       const mode = $('input[name="topicMode"]:checked').value;
-      $('#topicsTextareaWrap').style.display = mode === 'textarea' ? '' : 'none';
-      $('#topicsCountWrap').style.display = mode === 'count' ? '' : 'none';
+      document.getElementById('topicsTextareaWrap').style.display = mode === 'textarea' ? '' : 'none';
+      document.getElementById('topicsCountWrap').style.display = mode === 'count' ? '' : 'none';
     }));
 
-    function parseTopicsFromTextarea(text){
-      const lines = text.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
-      // dedup preserving order
-      const seen = new Set();
-      const out = [];
-      for (const s of lines){ if (!seen.has(s)){ seen.add(s); out.push(s); } }
-      return out;
-    }
+    function parseTopicsFromTextarea(text){ const lines = text.split(/\r?\n/).map(s=>s.trim()).filter(Boolean); const seen=new Set(); const out=[]; for(const s of lines){ if(!seen.has(s)){ seen.add(s); out.push(s);} } return out; }
+    function generateTopicsByCount(n){ n = Math.max(1, Math.floor(n)); return Array.from({length:n}, (_,i)=>`Đề tài ${i+1}`); }
+    function getTopicsInput(){ const mode = $('input[name="topicMode"]:checked').value; if (mode === 'textarea'){ return parseTopicsFromTextarea(document.getElementById('topicsTextarea').value); } else { const n = parseInt(document.getElementById('topicsCount').value, 10); if (!Number.isFinite(n) || n < 1) return []; return generateTopicsByCount(n); } }
+    function validateAssign(gCount, topics, allowDup){ if (!Number.isFinite(gCount) || gCount < 1) return {ok:false, msg:'Số nhóm phải ≥ 1'}; if (!topics.length) return {ok:false, msg:'Danh sách chủ đề trống'}; if (!allowDup && gCount > topics.length) return {ok:false, msg:'Số nhóm > số chủ đề. Bật "Cho phép lặp" hoặc thêm chủ đề.'}; if (gCount > 1000) return {ok:false, msg:'Quá nhiều nhóm (>1000)'}; if (topics.length > 2000) return {ok:false, msg:'Quá nhiều chủ đề (>2000)'}; return {ok:true}; }
+    function assignTopics(gCount, topics, allowDup, rng){ const res=[]; if (allowDup){ for (let i=0;i<gCount;i++){ const idx = Math.floor(rng.next() * topics.length); res.push({ group: i+1, topic: topics[idx] }); } } else { const order = shuffle(topics.map((_,i)=>i), rng); for (let i=0;i<gCount;i++){ res.push({ group: i+1, topic: topics[order[i]] }); } } return res; }
+    function renderAssignments(rows){ const tbody = document.querySelector('#assignTable tbody'); tbody.innerHTML=''; for (const {group, topic} of rows){ const tr=document.createElement('tr'); const td1=document.createElement('td'); td1.textContent=`Group ${group}`; const td2=document.createElement('td'); td2.textContent=topic; td2.title=topic; tr.append(td1,td2); tbody.appendChild(tr);} }
+    function copyAssignments(){ const lines = assignState.lastAssignments.map(r=>`Group ${r.group} - ${r.topic}`).join('\n'); if (!lines) return; navigator.clipboard.writeText(lines).then(()=>toast('Đã copy danh sách')).catch(()=>toast('Copy thất bại')); }
+    function exportCSV(){ const rows = assignState.lastAssignments; if (!rows.length) return; const csv = ['Group,Topic', ...rows.map(r => `"Group ${r.group}","${r.topic.replace(/"/g,'""')}"`)].join('\n'); downloadText('assignments.csv', csv); }
+    function doAssign(isReroll=false){ const g = parseInt(document.getElementById('groupCount').value, 10); const topics = getTopicsInput(); const allowDup = document.getElementById('allowDupChk').checked; const seedStr = document.getElementById('seedInput').value.trim(); const v = validateAssign(g, topics, allowDup); const warn = document.getElementById('assignWarn'); if (!v.ok){ warn.innerHTML = `<span class="warn">${v.msg}</span>`; return; } else warn.textContent = ''; let rng; if (seedStr){ if (isReroll) assignState.rerollCounter++; else assignState.rerollCounter = 0; rng = makeRNG(seedStr + '::' + assignState.rerollCounter); } else { rng = makeRNG(); } const rows = assignTopics(g, topics, allowDup, rng); assignState.topics = topics; assignState.lastAssignments = rows; assignState.seed = seedStr; renderAssignments(rows); }
 
-    function generateTopicsByCount(n){
-      n = Math.max(1, Math.floor(n));
-      return Array.from({length:n}, (_,i)=>`Đề tài ${i+1}`);
-    }
+    document.getElementById('assignBtn').addEventListener('click', ()=>doAssign(false));
+    document.getElementById('rerollBtn').addEventListener('click', ()=>doAssign(true));
+    document.getElementById('resetAssignBtn').addEventListener('click', ()=>{ document.getElementById('groupCount').value = 5; document.getElementById('topicsTextarea').value = ''; document.getElementById('topicsCount').value = 5; document.getElementById('allowDupChk').checked = false; document.getElementById('seedInput').value = ''; assignState.lastAssignments = []; renderAssignments([]); document.getElementById('assignWarn').textContent = ''; });
+    document.getElementById('copyAssignBtn').addEventListener('click', copyAssignments);
+    document.getElementById('csvBtn').addEventListener('click', exportCSV);
+    document.getElementById('printBtn').addEventListener('click', ()=>window.print());
 
-    function getTopicsInput(){
-      const mode = $('input[name="topicMode"]:checked').value;
-      if (mode === 'textarea'){
-        return parseTopicsFromTextarea($('#topicsTextarea').value);
-      } else {
-        const n = parseInt($('#topicsCount').value, 10);
-        if (!Number.isFinite(n) || n < 1) return [];
-        return generateTopicsByCount(n);
-      }
-    }
+    document.getElementById('topicsTextarea').value = [].join('\n');
 
-    function validateAssign(gCount, topics, allowDup){
-      if (!Number.isFinite(gCount) || gCount < 1) return {ok:false, msg:'Số nhóm phải ≥ 1'};
-      if (!topics.length) return {ok:false, msg:'Danh sách chủ đề trống'};
-      if (!allowDup && gCount > topics.length) return {ok:false, msg:'Số nhóm > số chủ đề. Bật "Cho phép lặp" hoặc thêm chủ đề.'};
-      if (gCount > 1000) return {ok:false, msg:'Quá nhiều nhóm (>1000)'};
-      if (topics.length > 2000) return {ok:false, msg:'Quá nhiều chủ đề (>2000)'};
-      return {ok:true};
-    }
-
-    function assignTopics(gCount, topics, allowDup, rng){
-      const res = [];
-      if (allowDup){
-        for (let i=0;i<gCount;i++){
-          const idx = Math.floor(rng.next() * topics.length);
-          res.push({ group: i+1, topic: topics[idx] });
-        }
-      } else {
-        const order = shuffle(topics.map((_,i)=>i), rng);
-        for (let i=0;i<gCount;i++){
-          res.push({ group: i+1, topic: topics[order[i]] });
-        }
-      }
-      return res;
-    }
-
-    function renderAssignments(rows){
-      const tbody = $('#assignTable tbody');
-      tbody.innerHTML = '';
-      for (const {group, topic} of rows){
-        const tr = document.createElement('tr');
-        const td1 = document.createElement('td'); td1.textContent = `Group ${group}`;
-        const td2 = document.createElement('td'); td2.textContent = topic; td2.title = topic;
-        tr.append(td1, td2); tbody.appendChild(tr);
-      }
-    }
-
-    function copyAssignments(){
-      const lines = assignState.lastAssignments.map(r=>`Group ${r.group} - ${r.topic}`).join('\n');
-      if (!lines) return;
-      navigator.clipboard.writeText(lines).then(()=>toast('Đã copy danh sách')).catch(()=>toast('Copy thất bại'));
-    }
-
-    function exportCSV(){
-      const rows = assignState.lastAssignments;
-      if (!rows.length) return;
-      const csv = ['Group,Topic', ...rows.map(r => `"Group ${r.group}","${r.topic.replace(/"/g,'""')}"`)].join('\n');
-      downloadText('assignments.csv', csv);
-    }
-
-    function doAssign(isReroll=false){
-      const g = parseInt($('#groupCount').value, 10);
-      const topics = getTopicsInput();
-      const allowDup = $('#allowDupChk').checked;
-      const seedStr = $('#seedInput').value.trim();
-      const v = validateAssign(g, topics, allowDup);
-      const warn = $('#assignWarn');
-      if (!v.ok){ warn.innerHTML = `<span class="warn">${v.msg}</span>`; return; } else warn.textContent = '';
-
-      let rng;
-      if (seedStr){
-        // For reroll: combine seed with counter to get different but reproducible sequences
-        if (isReroll) assignState.rerollCounter++; else assignState.rerollCounter = 0;
-        rng = makeRNG(seedStr + '::' + assignState.rerollCounter);
-      } else {
-        rng = makeRNG();
-      }
-
-      const rows = assignTopics(g, topics, allowDup, rng);
-      assignState.topics = topics;
-      assignState.lastAssignments = rows;
-      assignState.seed = seedStr;
-      renderAssignments(rows);
-    }
-
-    // Bind assign events
-    $('#assignBtn').addEventListener('click', ()=>doAssign(false));
-    $('#rerollBtn').addEventListener('click', ()=>doAssign(true));
-    $('#resetAssignBtn').addEventListener('click', ()=>{
-      $('#groupCount').value = 5;
-      $('#topicsTextarea').value = '';
-      $('#topicsCount').value = 5;
-      $('#allowDupChk').checked = false;
-      $('#seedInput').value = '';
-      assignState.lastAssignments = [];
-      renderAssignments([]);
-      $('#assignWarn').textContent = '';
-    });
-    $('#copyAssignBtn').addEventListener('click', copyAssignments);
-    $('#csvBtn').addEventListener('click', exportCSV);
-    $('#printBtn').addEventListener('click', ()=>window.print());
-
-    // Provide a small starter list for convenience
-    $('#topicsTextarea').value = [
-      'Hi Hi',
-      'He He',
-      'Hu Hu',
-      'Ha Ha',
-      'Ha Ha Hu Hu Hi Hi He He'
-    ].join('\n');
-
-    // Keyboard: press Enter to trigger primary action within panels
     document.addEventListener('keydown', (e)=>{
       if (e.key === 'Enter'){
-        const wheelVisible = !$('#panel-wheel').hidden;
+        const wheelVisible = !document.getElementById('panel-wheel').hidden;
         if (wheelVisible) {
-          // If focus is in start/end inputs, treat as "Tạo vòng"; else, Start spin
           const active = document.activeElement;
-          if (active && (active.id==='startNum' || active.id==='endNum')) $('#buildWheelBtn').click();
-          else $('#spinBtn').click();
-        } else {
-          $('#assignBtn').click();
-        }
+          if (active && (active.id==='startNum' || active.id==='endNum')) document.getElementById('buildWheelBtn').click();
+          else document.getElementById('spinBtn').click();
+        } else { document.getElementById('assignBtn').click(); }
       }
     });
   </script>
